@@ -1,0 +1,464 @@
+/* ═══════════════════════════════════════════════════════════════
+   LEXICON CHAOS — Mobile-Exclusive Styles
+   ═══════════════════════════════════════════════════════════════ */
+
+/* ── Reset & Base ─────────────────────────────────────────── */
+*,
+*::before,
+*::after {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+html,
+body {
+    background: #0a0a0f;
+    overflow: hidden;
+    font-family: 'Orbitron', sans-serif;
+    color: #e0e0e0;
+    height: 100%;
+    width: 100%;
+    position: fixed;
+    inset: 0;
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
+    -webkit-text-size-adjust: 100%;
+    -webkit-user-select: none;
+    user-select: none;
+}
+
+/* ── Hidden mobile input ──────────────────────────────────── */
+#mobileInput {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    width: 1px;
+    height: 1px;
+    opacity: 0;
+    border: none;
+    outline: none;
+    background: transparent;
+    color: transparent;
+    caret-color: transparent;
+    font-size: 16px;
+    /* prevents iOS zoom on focus */
+    z-index: 9999;
+    pointer-events: none;
+}
+
+/* ── Canvas ───────────────────────────────────────────────── */
+#gameCanvas {
+    display: block;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: radial-gradient(ellipse at 50% 30%, #12121a 0%, #0a0a0f 100%);
+    touch-action: none;
+}
+
+/* ── HUD ──────────────────────────────────────────────────── */
+.hud {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 16px;
+    padding-top: max(12px, env(safe-area-inset-top, 12px));
+    pointer-events: none;
+    z-index: 10;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+}
+
+.hud-item {
+    font-size: 13px;
+    font-weight: 700;
+    text-shadow: 0 0 10px rgba(0, 255, 200, .6);
+}
+
+#scoreDisplay {
+    color: #00ffc8;
+}
+
+#highScoreDisplay {
+    color: #ff6ecf;
+    text-shadow: 0 0 10px rgba(255, 110, 207, .6);
+}
+
+/* ── Word Density Bar ─────────────────────────────────────── */
+.word-bar-wrap {
+    position: fixed;
+    top: auto;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    z-index: 8;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding-bottom: 6px;
+    pointer-events: none;
+    transition: bottom .25s ease;
+}
+
+.word-bar-label {
+    font-size: 9px;
+    letter-spacing: 1.5px;
+    color: rgba(255, 255, 255, .25);
+    margin-bottom: 3px;
+}
+
+.word-bar-container {
+    width: 160px;
+    height: 5px;
+    background: rgba(255, 255, 255, .08);
+    border-radius: 3px;
+    overflow: hidden;
+}
+
+.word-bar-fill {
+    height: 100%;
+    width: 0%;
+    border-radius: 3px;
+    background: linear-gradient(90deg, #00ffc8, #ff6ecf);
+    transition: width .3s ease;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   Typing HUD — Cyberpunk Terminal (sits above keyboard)
+   ═══════════════════════════════════════════════════════════════ */
+.typing-hud {
+    position: fixed;
+    bottom: 20px;
+    left: 10px;
+    right: 10px;
+    z-index: 20;
+    padding: 14px 18px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+
+    background: rgba(6, 6, 14, .88);
+    backdrop-filter: blur(14px);
+    border: 1.5px solid rgba(0, 255, 200, .3);
+    border-radius: 10px;
+    box-shadow:
+        0 0 14px rgba(0, 255, 200, .1),
+        0 0 40px rgba(0, 255, 200, .05),
+        inset 0 0 20px rgba(0, 255, 200, .02);
+
+    font-family: 'Fira Code', 'Consolas', monospace;
+    font-size: 20px;
+    pointer-events: none;
+    transition: bottom .25s ease;
+}
+
+.typing-hud-prompt {
+    color: #00ffc8;
+    font-weight: 600;
+    text-shadow: 0 0 8px rgba(0, 255, 200, .5);
+    flex-shrink: 0;
+}
+
+.typing-hud-content {
+    display: inline;
+    white-space: nowrap;
+    overflow: hidden;
+}
+
+.typing-hud-idle {
+    color: rgba(255, 255, 255, .22);
+    letter-spacing: 2px;
+    font-size: 13px;
+}
+
+.typing-hud-cursor {
+    color: #00ffc8;
+    animation: blink-cursor .75s step-end infinite;
+    text-shadow: 0 0 6px rgba(0, 255, 200, .6);
+}
+
+@keyframes blink-cursor {
+
+    0%,
+    100% {
+        opacity: 1;
+    }
+
+    50% {
+        opacity: 0;
+    }
+}
+
+.typing-hud-typed {
+    color: #00ff88;
+    text-shadow: 0 0 10px rgba(0, 255, 136, .6);
+    font-weight: 600;
+}
+
+.typing-hud-remaining {
+    color: rgba(255, 255, 255, .2);
+}
+
+.typing-hud.active {
+    border-color: rgba(0, 255, 200, .55);
+    box-shadow:
+        0 0 18px rgba(0, 255, 200, .2),
+        0 0 50px rgba(0, 255, 200, .07),
+        inset 0 0 24px rgba(0, 255, 200, .03);
+}
+
+/* ── Music Toggle ─────────────────────────────────────────── */
+.music-toggle {
+    position: fixed;
+    top: 10px;
+    right: 50%;
+    transform: translateX(50%);
+    z-index: 50;
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    border: 1.5px solid rgba(255, 255, 255, .15);
+    background: rgba(10, 10, 15, .65);
+    backdrop-filter: blur(8px);
+    color: #e0e0e0;
+    font-size: 22px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    touch-action: manipulation;
+    transition: all .2s ease;
+    padding-top: max(0px, env(safe-area-inset-top, 0px));
+}
+
+.music-toggle:active {
+    transform: translateX(50%) scale(0.9);
+}
+
+.music-toggle.playing {
+    border-color: rgba(0, 255, 200, .5);
+    color: #00ffc8;
+    box-shadow: 0 0 14px rgba(0, 255, 200, .2);
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   Overlays — Start & Game Over
+   ═══════════════════════════════════════════════════════════════ */
+.overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(5, 5, 12, .88);
+    backdrop-filter: blur(10px);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    z-index: 100;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity .4s ease;
+    padding: 20px;
+}
+
+.overlay.visible {
+    opacity: 1;
+    pointer-events: auto;
+}
+
+.overlay h1 {
+    font-size: clamp(32px, 10vw, 60px);
+    font-weight: 900;
+    background: linear-gradient(135deg, #00ffc8, #7b61ff, #ff6ecf);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    margin-bottom: 10px;
+    letter-spacing: 3px;
+    text-align: center;
+    line-height: 1.15;
+    animation: glow-pulse 2s ease-in-out infinite alternate;
+}
+
+.overlay .subtitle {
+    font-size: clamp(16px, 5vw, 26px);
+    color: #ff4466;
+    letter-spacing: 5px;
+    text-shadow: 0 0 18px rgba(255, 68, 102, .6);
+    margin-bottom: 6px;
+}
+
+.overlay .final-score {
+    font-size: clamp(13px, 3.5vw, 20px);
+    color: #aaa;
+    margin-bottom: 30px;
+    letter-spacing: 2px;
+}
+
+.start-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(5, 5, 12, .94);
+    backdrop-filter: blur(14px);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    z-index: 200;
+    transition: opacity .4s ease;
+    padding: 20px;
+}
+
+.start-overlay.hidden {
+    opacity: 0;
+    pointer-events: none;
+}
+
+.start-overlay h1 {
+    font-size: clamp(36px, 12vw, 70px);
+    font-weight: 900;
+    background: linear-gradient(135deg, #00ffc8, #7b61ff, #ff6ecf);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    letter-spacing: 4px;
+    margin-bottom: 12px;
+    text-align: center;
+    line-height: 1.15;
+    animation: glow-pulse 2s ease-in-out infinite alternate;
+}
+
+.start-overlay .tagline {
+    font-family: 'Fira Code', monospace;
+    font-size: 12px;
+    color: rgba(255, 255, 255, .35);
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    margin-bottom: 40px;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   Neon Arcade Button (Mobile — large touch targets)
+   ═══════════════════════════════════════════════════════════════ */
+.btn-neon {
+    position: relative;
+    font-family: 'Orbitron', sans-serif;
+    font-size: 15px;
+    font-weight: 900;
+    padding: 18px 44px;
+    min-height: 56px;
+    border: none;
+    border-radius: 10px;
+    cursor: pointer;
+    text-transform: uppercase;
+    letter-spacing: 4px;
+    color: #fff;
+    background: linear-gradient(135deg, #0d0d1a 0%, #14142b 100%);
+    outline: 2px solid rgba(0, 255, 200, .5);
+    outline-offset: 0px;
+    overflow: hidden;
+    z-index: 1;
+    touch-action: manipulation;
+
+    box-shadow:
+        0 0 12px rgba(0, 255, 200, .4),
+        0 0 35px rgba(0, 255, 200, .15),
+        0 0 60px rgba(123, 97, 255, .1),
+        inset 0 0 20px rgba(0, 255, 200, .05);
+
+    transition:
+        transform .15s ease,
+        box-shadow .25s ease;
+}
+
+.btn-neon::before {
+    content: '';
+    position: absolute;
+    inset: -2px;
+    border-radius: 12px;
+    background: linear-gradient(270deg, #00ffc8, #7b61ff, #ff6ecf, #00ffc8);
+    background-size: 400% 400%;
+    animation: neon-border-shift 4s ease infinite;
+    z-index: -2;
+}
+
+.btn-neon::after {
+    content: '';
+    position: absolute;
+    inset: 2px;
+    border-radius: 8px;
+    background: linear-gradient(135deg, #0d0d1a 0%, #14142b 100%);
+    z-index: -1;
+}
+
+.btn-neon:active {
+    transform: scale(0.94);
+    box-shadow:
+        0 0 8px rgba(0, 255, 200, .5),
+        0 0 18px rgba(0, 255, 200, .2),
+        inset 0 0 12px rgba(0, 255, 200, .08);
+}
+
+@keyframes neon-border-shift {
+    0% {
+        background-position: 0% 50%;
+    }
+
+    50% {
+        background-position: 100% 50%;
+    }
+
+    100% {
+        background-position: 0% 50%;
+    }
+}
+
+/* ── Screen Shake ─────────────────────────────────────────── */
+.screen-shake {
+    animation: shake .3s ease;
+}
+
+@keyframes shake {
+
+    0%,
+    100% {
+        transform: translate(0, 0);
+    }
+
+    15% {
+        transform: translate(-4px, 2px);
+    }
+
+    30% {
+        transform: translate(4px, -3px);
+    }
+
+    45% {
+        transform: translate(-3px, 4px);
+    }
+
+    60% {
+        transform: translate(3px, -2px);
+    }
+
+    75% {
+        transform: translate(-2px, 3px);
+    }
+}
+
+/* ── Animations ──────────────────────────────────────────── */
+@keyframes glow-pulse {
+    from {
+        filter: drop-shadow(0 0 6px rgba(0, 255, 200, .3));
+    }
+
+    to {
+        filter: drop-shadow(0 0 16px rgba(123, 97, 255, .5));
+    }
+}

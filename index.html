@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="theme-color" content="#0a0a0f" />
+    <title>Lexicon Chaos</title>
+    <meta name="description" content="Lexicon Chaos: A mobile anti-gravity typing arcade game for hackers." />
+
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+        href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Fira+Code:wght@400;600&display=swap"
+        rel="stylesheet" />
+
+    <!-- Styles -->
+    <link rel="stylesheet" href="style.css" />
+
+    <!-- Matter.js -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/matter-js/0.20.0/matter.min.js"></script>
+</head>
+
+<body>
+
+    <!-- Hidden input to summon mobile virtual keyboard -->
+    <input type="text" id="mobileInput" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"
+        inputmode="text" />
+
+    <!-- Background Music -->
+    <audio id="bgMusic" loop preload="auto">
+        <source src="https://www.soundhelix.com/examples/mp3/SoundHelix-Song-4.mp3" type="audio/mpeg" />
+    </audio>
+
+    <!-- HUD -->
+    <div class="hud">
+        <div class="hud-item" id="scoreDisplay">Score: 0</div>
+        <div class="hud-item" id="highScoreDisplay">Best: 0</div>
+    </div>
+
+    <!-- Music Toggle -->
+    <button class="music-toggle" id="musicToggle" title="Toggle Music">🔇</button>
+
+    <!-- Word Density Bar -->
+    <div class="word-bar-wrap">
+        <div class="word-bar-label">DENSITY</div>
+        <div class="word-bar-container">
+            <div class="word-bar-fill" id="wordBarFill"></div>
+        </div>
+    </div>
+
+    <!-- Typing HUD -->
+    <div class="typing-hud" id="typingHud">
+        <span class="typing-hud-prompt">&gt;</span>
+        <span class="typing-hud-content" id="typingHudContent">
+            <span class="typing-hud-idle">AWAITING INPUT<span class="typing-hud-cursor">_</span></span>
+        </span>
+    </div>
+
+    <!-- Game Canvas -->
+    <canvas id="gameCanvas"></canvas>
+
+    <!-- Game Over Overlay -->
+    <div class="overlay" id="gameOverOverlay">
+        <h1>LEXICON CHAOS</h1>
+        <div class="subtitle">GAME OVER</div>
+        <div class="final-score" id="finalScore">Final Score: 0</div>
+        <button class="btn btn-neon" id="playAgainBtn">Play Again</button>
+    </div>
+
+    <!-- Start Screen -->
+    <div class="start-overlay" id="startOverlay">
+        <h1>LEXICON<br />CHAOS</h1>
+        <div class="tagline">Type to survive the chaos</div>
+        <button class="btn btn-neon" id="startBtn">Start Game</button>
+    </div>
+
+    <!-- Game Logic -->
+    <script src="app.js"></script>
+
+</body>
+
+</html>
