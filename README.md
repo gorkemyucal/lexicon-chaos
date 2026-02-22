@@ -7,7 +7,7 @@
 ## 🎮 How to Play
 - **Objective:** Type the words floating on the screen as fast as possible.
 - **Physics:** Words bounce and collide in a zero-gravity void using the **Matter.js** engine.
-- **Game Over:** If more than 15 words accumulate on the screen, the chaos becomes uncontrollable, and it's Game Over!
+- **Game Over:** If the word density bar on the screen fills up, the chaos becomes uncontrollable, and it's Game Over!
 
 ## ✨ Key Features
 - **Anti-Gravity Physics:** Realistic floating and bouncing mechanics powered by Matter.js.
