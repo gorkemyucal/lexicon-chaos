@@ -11,7 +11,6 @@
 
 ## ✨ Key Features
 - **Anti-Gravity Physics:** Realistic floating and bouncing mechanics powered by Matter.js.
-- **Developer Theme:** 100+ technical terms ranging from "Asynchronous" to "Kubernetes".
 - **Typing HUD:** A sleek, cyberpunk terminal bar that tracks your live input.
 - **Mobile First:** Includes a hidden input system to trigger virtual keyboards on iOS and Android automatically.
 - **High Score System:** Saves your best performance locally via `localStorage`.
