@@ -23,7 +23,7 @@
 
 ## 🚀 Live Demo
 You can play the game directly in your browser here:
-👉 **[INSERT YOUR GITHUB PAGES URL HERE]**
+👉 https://gorkemyucal.github.io/lexicon-chaos/
 
 ## 📥 Installation (Local Run)
 1. Clone this repository:
