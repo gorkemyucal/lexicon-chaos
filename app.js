@@ -26,7 +26,7 @@
 
     // ── Constants ──────────────────────────────────────────────
     const MAX_WORDS = 15;
-    const SPAWN_INTERVAL = 2200; // slightly slower for mobile
+    const SPAWN_INTERVAL = 1400; // faster spawns for more challenge
     const FONT_SIZE = 18;   // minimum readable on mobile
 
     // 60+ Computer Science / Engineering words (short-to-medium for mobile widths)
@@ -65,7 +65,7 @@
     let wordBodies = [];
     let score = 0;
     let highScore = parseInt(localStorage.getItem('lexicon_highscore')) || 0;
-    let lockedWord = null;
+    let activeCandidates = [];
     let spawnTimer = null;
     let gameRunning = false;
     let particles = [];
@@ -96,15 +96,18 @@
             keyboardHeight = 0;
         }
 
+        // Strictly size the canvas element and its resolution
         canvas.width = vw;
         canvas.height = vh;
+        canvas.style.width = vw + 'px';
+        canvas.style.height = vh + 'px';
 
-        // Reposition typing HUD above the keyboard
-        const hudBottom = keyboardHeight > 50 ? (keyboardHeight + 8) : 20;
+        // Sticking UI directly to the bottom of the visualViewport
+        // We use keyboardHeight to 'lift' the fixed elements above the virtual keyboard
+        const hudBottom = keyboardHeight > 20 ? (keyboardHeight + 10) : 20;
         typingHud.style.bottom = hudBottom + 'px';
 
-        // Move density bar above the HUD
-        const barBottom = hudBottom + 62;
+        const barBottom = hudBottom + 45; // slimmer gap now
         wordBarWrap.style.bottom = barBottom + 'px';
     }
 
@@ -125,7 +128,7 @@
     //  Typing HUD
     // ═════════════════════════════════════════════════════════════
     function updateTypingHud() {
-        if (!lockedWord) {
+        if (activeCandidates.length === 0) {
             typingHud.classList.remove('active');
             typingHudContent.innerHTML =
                 '<span class="typing-hud-idle">AWAITING INPUT<span class="typing-hud-cursor">_</span></span>';
@@ -133,8 +136,10 @@
         }
 
         typingHud.classList.add('active');
-        const typed = lockedWord.word.substring(0, lockedWord.typedCount);
-        const remaining = lockedWord.word.substring(lockedWord.typedCount);
+        // HUD shows progress of the first candidate in the list
+        const primary = activeCandidates[0];
+        const typed = primary.word.substring(0, primary.typedCount);
+        const remaining = primary.word.substring(primary.typedCount);
 
         typingHudContent.innerHTML =
             `<span class="typing-hud-typed">${typed}</span>` +
@@ -186,21 +191,21 @@
     // ═════════════════════════════════════════════════════════════
     function createEngine() {
         engine = Engine.create();
-        engine.world.gravity.y = 0.05; // slight downward drift for vertical feel
+        engine.world.gravity.y = 0.18; // stronger downward pull for more challenge
         engine.world.gravity.x = 0;
         runner = Runner.create();
     }
 
     function createWalls() {
-        const w = canvas.width;
-        const h = canvas.height;
-        const t = 40;
+        const w = vw;
+        const h = vh;
+        const t = 100; // thicker walls
         const opts = { isStatic: true, restitution: 1, friction: 0, frictionStatic: 0 };
         walls = [
-            Bodies.rectangle(w / 2, -t / 2, w + t * 2, t, opts),
-            Bodies.rectangle(w / 2, h + t / 2, w + t * 2, t, opts),
-            Bodies.rectangle(-t / 2, h / 2, t, h + t * 2, opts),
-            Bodies.rectangle(w + t / 2, h / 2, t, h + t * 2, opts),
+            Bodies.rectangle(w / 2, -t / 2, w + t * 2, t, opts), // top
+            Bodies.rectangle(w / 2, h - 110 + t / 2, w + t * 2, t, opts), // raised floor (above HUD)
+            Bodies.rectangle(-t / 2, h / 2, t, h + t * 2, opts), // left
+            Bodies.rectangle(w + t / 2, h / 2, t, h + t * 2, opts), // right
         ];
         Composite.add(engine.world, walls);
     }
@@ -220,8 +225,8 @@
 
         const word = WORD_POOL[Math.floor(Math.random() * WORD_POOL.length)];
         const pad = 60;
-        const x = pad + Math.random() * (canvas.width - pad * 2);
-        const y = pad + Math.random() * (canvas.height * 0.6); // upper 60% of visible area
+        const x = pad + Math.random() * (vw - pad * 2);
+        const y = pad + Math.random() * (vh * 0.45); // Constrain spawn area more to stay clear of HUD area
 
         const bw = word.length * FONT_SIZE + 20;
         const bh = 36;
@@ -235,7 +240,7 @@
             chamfer: { radius: 5 },
         });
 
-        const speed = 1 + Math.random() * 1.5;
+        const speed = 2 + Math.random() * 2.5;
         const angle = Math.random() * Math.PI * 2;
         Body.setVelocity(body, { x: Math.cos(angle) * speed, y: Math.sin(angle) * speed });
         Body.setAngularVelocity(body, (Math.random() - 0.5) * 0.03);
@@ -267,7 +272,7 @@
 
         Composite.remove(engine.world, entry.body);
         wordBodies = wordBodies.filter(wb => wb !== entry);
-        lockedWord = null;
+        activeCandidates = [];
 
         score += entry.word.length * 10;
         scoreEl.textContent = `Score: ${score}`;
@@ -317,38 +322,70 @@
 
     // Physical keyboard support (desktop & external keyboards)
     document.addEventListener('keydown', (e) => {
-        if (!gameRunning) return;
-        // Skip if the hidden input already handled this via the 'input' event
+        // Start/Restart via keyboard
+        if (!gameRunning) {
+            if (e.code === 'Enter' || e.code === 'Space') {
+                e.preventDefault();
+                if (!startOverlay.classList.contains('hidden')) {
+                    startOverlay.classList.add('hidden');
+                    focusInput();
+                    startGame();
+                } else if (overlay.classList.contains('visible')) {
+                    focusInput();
+                    startGame();
+                }
+            }
+            return;
+        }
+
+        // Skip if the hidden input already handled this (mobile sync)
         if (isTouchDevice && document.activeElement === mobileInput) return;
-        if (e.key.length !== 1) return;
-        const ch = e.key.toLowerCase();
-        if (!/[a-z]/.test(ch)) return;
-        processChar(ch);
+
+        // Handle gameplay letters
+        if (e.key.length === 1) {
+            const ch = e.key.toLowerCase();
+            if (/[a-z]/.test(ch)) {
+                // Prevent default browser behavior (shortcuts/scrolling) for game keys
+                e.preventDefault();
+                processChar(ch);
+            }
+        }
     });
 
     function processChar(ch) {
-        if (lockedWord) {
-            const nextChar = lockedWord.word[lockedWord.typedCount];
-            if (ch === nextChar) {
-                lockedWord.typedCount++;
-                if (lockedWord.typedCount >= lockedWord.word.length) {
-                    destroyWord(lockedWord);
+        if (activeCandidates.length > 0) {
+            // Filter current candidates by the next expected character
+            const nextCandidates = activeCandidates.filter(wb => wb.word[wb.typedCount] === ch);
+
+            if (nextCandidates.length > 0) {
+                // We have matches: update progress for all survivors
+                activeCandidates = nextCandidates;
+                activeCandidates.forEach(wb => wb.typedCount++);
+
+                // Check for completion
+                const finished = activeCandidates.find(wb => wb.typedCount >= wb.word.length);
+                if (finished) {
+                    destroyWord(finished);
                 } else {
                     updateTypingHud();
                 }
             } else {
-                lockedWord.typedCount = 0;
-                lockedWord = null;
+                // Mistake: reset all active candidates
+                activeCandidates.forEach(wb => wb.typedCount = 0);
+                activeCandidates = [];
                 updateTypingHud();
             }
         } else {
-            const candidates = wordBodies.filter(wb => wb.word[0] === ch);
-            if (candidates.length > 0) {
-                candidates.sort((a, b) => a.word.length - b.word.length);
-                lockedWord = candidates[0];
-                lockedWord.typedCount = 1;
-                if (lockedWord.word.length === 1) {
-                    destroyWord(lockedWord);
+            // No active lock: look for all words starting with this character
+            const matches = wordBodies.filter(wb => wb.word[0] === ch);
+            if (matches.length > 0) {
+                activeCandidates = matches;
+                activeCandidates.forEach(wb => wb.typedCount = 1);
+
+                // If any word is only 1 char long (edge case but possible)
+                const finished = activeCandidates.find(wb => wb.typedCount >= wb.word.length);
+                if (finished) {
+                    destroyWord(finished);
                 } else {
                     updateTypingHud();
                 }
@@ -383,7 +420,7 @@
             const { body, word, typedCount } = entry;
             const { x, y } = body.position;
             const angle = body.angle;
-            const isLocked = entry === lockedWord;
+            const isActive = activeCandidates.includes(entry);
 
             ctx.save();
             ctx.translate(x, y);
@@ -392,13 +429,13 @@
             const bw = word.length * FONT_SIZE + 20;
             const bh = 36;
 
-            if (isLocked) {
+            if (isActive) {
                 ctx.shadowColor = '#ffd700';
                 ctx.shadowBlur = 18;
             }
 
-            ctx.fillStyle = isLocked ? 'rgba(255, 215, 0, .12)' : 'rgba(255,255,255,.06)';
-            ctx.strokeStyle = isLocked ? 'rgba(255, 215, 0, .6)' : 'rgba(255,255,255,.15)';
+            ctx.fillStyle = isActive ? 'rgba(255, 215, 0, .12)' : 'rgba(255,255,255,.06)';
+            ctx.strokeStyle = isActive ? 'rgba(255, 215, 0, .6)' : 'rgba(255,255,255,.15)';
             ctx.lineWidth = 1.5;
             roundRect(ctx, -bw / 2, -bh / 2, bw, bh, 5);
             ctx.fill();
@@ -410,7 +447,7 @@
             ctx.textAlign = 'center';
             ctx.textBaseline = 'middle';
 
-            if (typedCount > 0 && isLocked) {
+            if (typedCount > 0 && isActive) {
                 const typed = word.substring(0, typedCount);
                 const untyped = word.substring(typedCount);
                 const fullW = ctx.measureText(word).width;
@@ -492,7 +529,7 @@
         finalScoreEl.textContent = `Final Score: ${score}`;
         overlay.classList.add('visible');
 
-        lockedWord = null;
+        activeCandidates = [];
         updateTypingHud();
     }
 
@@ -504,7 +541,7 @@
 
         wordBodies = [];
         particles = [];
-        lockedWord = null;
+        activeCandidates = [];
         score = 0;
         scoreEl.textContent = 'Score: 0';
         overlay.classList.remove('visible');
@@ -520,27 +557,39 @@
         spawnTimer = setInterval(spawnWord, SPAWN_INTERVAL);
         spawnWord();
 
-        // Focus hidden input → summon virtual keyboard (mobile only)
-        if (isTouchDevice) setTimeout(focusInput, 150);
-
         if (!musicPlaying) playMusic();
     }
 
     // ═════════════════════════════════════════════════════════════
     //  Event Listeners
     // ═════════════════════════════════════════════════════════════
-    playAgainBtn.addEventListener('touchend', (e) => { e.preventDefault(); startGame(); });
-    playAgainBtn.addEventListener('click', (e) => { e.preventDefault(); startGame(); });
+    playAgainBtn.addEventListener('touchend', (e) => {
+        e.preventDefault();
+        focusInput(); // Synchronous focus for iOS
+        startGame();
+    });
+    playAgainBtn.addEventListener('click', (e) => {
+        e.preventDefault();
+        focusInput();
+        startGame();
+    });
 
     startBtn.addEventListener('touchend', (e) => {
         e.preventDefault();
+        focusInput(); // Synchronous focus for iOS
         startOverlay.classList.add('hidden');
         startGame();
     });
     startBtn.addEventListener('click', (e) => {
         e.preventDefault();
+        focusInput();
         startOverlay.classList.add('hidden');
         startGame();
+    });
+
+    // Refocus if user taps the canvas
+    canvas.addEventListener('touchend', (e) => {
+        if (gameRunning) focusInput();
     });
 
     // Prevent context menu on long press
@@ -549,5 +598,6 @@
     // ═════════════════════════════════════════════════════════════
     //  Boot
     // ═════════════════════════════════════════════════════════════
+    window.focus();
     gameLoop();
 })();
