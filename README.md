@@ -25,7 +25,4 @@
 You can play the game directly in your browser here:
 👉 https://gorkemyucal.github.io/lexicon-chaos/
 
-## 📥 Installation (Local Run)
-1. Clone this repository:
-   ```bash
-   git clone https://github.com/gorkemyucal/Lexicon-Chaos.git
+
